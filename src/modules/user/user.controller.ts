@@ -67,7 +67,7 @@ export class UserController {
     description: 'Get users list',
     type: PageDto,
   })
-  getUsers(
+  async getUsers(
     @Query(new ValidationPipe({ transform: true }))
     pageOptionsDto: UsersPageOptionsDto,
   ): Promise<PageDto<UserDto>> {
@@ -107,7 +107,7 @@ export class UserController {
   @Auth([RoleType.ADMIN])
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiAcceptedResponse({
-    description: 'GDelete user',
+    description: 'Delete user',
   })
   async deleteCourseAdmin(@UUIDParam('id') id: Uuid): Promise<void> {
     return this.userService.deleteAdmin(id);

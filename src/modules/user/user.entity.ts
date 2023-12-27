@@ -4,6 +4,7 @@ import {
   OneToMany,
   OneToOne,
   Unique,
+  UpdateDateColumn,
   VirtualColumn,
 } from 'typeorm';
 
@@ -39,7 +40,9 @@ export class UserEntity extends AbstractEntity<UserDto> {
   @Column({ nullable: true, type: 'varchar' })
   avatarUrl!: string | null;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @UpdateDateColumn({
+    type: 'timestamp',
+  })
   lastLogin!: Date | null;
 
   @VirtualColumn({

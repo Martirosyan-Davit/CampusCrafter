@@ -1,6 +1,8 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
+import { RoleType } from '../../constants';
+import { Auth } from '../../decorators';
 import { UserDto } from '../user/dtos/user.dto';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
@@ -25,24 +27,16 @@ export class AuthController {
   async userLogin(
     @Body() userLoginDto: UserLoginDto,
   ): Promise<LoginPayloadDto> {
-    const userEntity = await this.authService.validateUser(userLoginDto);
-
-    const token = await this.authService.createAccessToken({
-      userId: userEntity.id,
-      role: userEntity.role,
-    });
-
-    return new LoginPayloadDto(userEntity.toDto(), token);
+    return this.authService.userLogin(userLoginDto);
   }
 
   @Post('register')
+  @Auth([RoleType.ADMIN])
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserDto, description: 'Successfully Registered' })
   async userRegister(
     @Body() userRegisterDto: UserRegisterDto,
   ): Promise<UserDto> {
-    console.log('has registr................');
-
     const createdUser = await this.userService.createUser(userRegisterDto);
 
     return createdUser.toDto();
@@ -52,7 +46,7 @@ export class AuthController {
   //   @Get('me')
   //   @HttpCode(HttpStatus.OK)
   //   @Auth([RoleType.USER, RoleType.ADMIN])
-  //   @ApiOkResponse({ type: UserDto, description: 'current user info' })
+  //   @ApiOkResponse({ type: UserDto, description: 'current user info' })  /* FIX if not use */
   //   getCurrentUser(@AuthUser() user: UserEntity): UserDto {
   //     return user.toDto();
   //   }

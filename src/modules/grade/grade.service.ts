@@ -70,13 +70,14 @@ export class GradeService {
   }
 
   async createGradeTeacher(
-    assignmentId: Uuid,
     gradeCreateDto: GradeCreateDto,
     userDto: UserDto,
   ): Promise<GradeDto> {
     const gradeEntity = await this.gradeRepository
       .createQueryBuilder('grade')
-      .where('grade.assignmentId = :assignmentId', { assignmentId })
+      .where('grade.assignmentId = :assignmentId', {
+        assignmentId: gradeCreateDto.assignmentId,
+      })
       .innerJoin('grade.assignment', 'assignment', 'assignment.course')
       .andWhere('assignment.course.teacherId = :teacherId', {
         teacherId: userDto.id,

@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { validateHash } from '../../common/utils';
 import { type RoleType, TokenType } from '../../constants';
-import { UserNotFoundException } from '../../exceptions';
 import { ApiConfigService } from '../../shared/services/api-config.service';
-import { type UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
+import { LoginPayloadDto } from './dto/login-payload.dto';
 import { TokenPayloadDto } from './dto/token-payload.dto';
 import { type UserLoginDto } from './dto/user-login.dto';
 
@@ -32,20 +30,14 @@ export class AuthService {
     });
   }
 
-  async validateUser(userLoginDto: UserLoginDto): Promise<UserEntity> {
-    const user = await this.userService.findOne({
-      email: userLoginDto.email,
+  async userLogin(userLoginDto: UserLoginDto): Promise<LoginPayloadDto> {
+    const userDto = await this.userService.validate(userLoginDto);
+
+    const tokenPayloadDto = await this.createAccessToken({
+      role: userDto.role,
+      userId: userDto.id,
     });
 
-    const isPasswordValid = await validateHash(
-      userLoginDto.password,
-      user.password,
-    );
-
-    if (!isPasswordValid) {
-      throw new UserNotFoundException();
-    }
-
-    return user;
+    return LoginPayloadDto.create({ accessToken: tokenPayloadDto.accessToken });
   }
 }

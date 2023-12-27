@@ -1,13 +1,18 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CourseModule } from '../../modules/course/course.module';
+import { CourseModule } from '../course/course.module';
+import { GradeModule } from '../grade/grade.module';
 import { AssignmentController } from './assignment.controller';
 import { AssignmentEntity } from './assignment.entity';
 import { AssignmentService } from './assignment.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AssignmentEntity]), CourseModule],
+  imports: [
+    TypeOrmModule.forFeature([AssignmentEntity]),
+    forwardRef(() => CourseModule),
+    GradeModule,
+  ],
   controllers: [AssignmentController],
   exports: [AssignmentService],
   providers: [AssignmentService],

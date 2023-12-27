@@ -13,10 +13,11 @@ import {
 import {
   ApiAcceptedResponse,
   ApiCreatedResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 
-import { type PageDto } from '../../common/dto/page.dto';
+import { PageDto } from '../../common/dto/page.dto';
 import { ApiVersionEnum, RoleType } from '../../constants';
 import { ApiPageOkResponse, Auth, AuthUser, UUIDParam } from '../../decorators';
 import { ApiVersion } from '../../decorators/version.decorators';
@@ -36,17 +37,9 @@ export class AssignmentController {
   constructor(private assignmentService: AssignmentService) {}
 
   @Post()
-  @Auth([RoleType.ADMIN])
-  @HttpCode(HttpStatus.CREATED)
-  @ApiCreatedResponse({ type: AssignmentDto })
-  @ApiVersion(ApiVersionEnum.ADMIN)
-  async createForAdmin(
-    @Body() createAssignmentDto: AssignmentAdminCreateDto,
-  ): Promise<AssignmentDto> {
-    return this.assignmentService.createAssignmentAdmin(createAssignmentDto);
-  }
-
-  @Post()
+  @ApiOperation({
+    summary: 'create assignment by course id',
+  })
   @Auth([RoleType.TEACHER])
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: AssignmentDto })
@@ -61,12 +54,26 @@ export class AssignmentController {
     );
   }
 
+  @Post()
+  @ApiOperation({
+    summary: 'create assignment by course id',
+  })
+  @Auth([RoleType.ADMIN])
+  @HttpCode(HttpStatus.CREATED)
+  @ApiCreatedResponse({ type: AssignmentDto })
+  @ApiVersion(ApiVersionEnum.ADMIN)
+  async createForAdmin(
+    @Body() createAssignmentDto: AssignmentAdminCreateDto,
+  ): Promise<AssignmentDto> {
+    return this.assignmentService.createAssignmentAdmin(createAssignmentDto);
+  }
+
   @Put(':id')
+  @ApiOperation({
+    summary: 'update assignment by id',
+  })
   @Auth([RoleType.TEACHER])
   @HttpCode(HttpStatus.ACCEPTED)
-  @ApiAcceptedResponse({
-    description: 'update course by id',
-  })
   @ApiVersion(ApiVersionEnum.TEACHER)
   async updateAssignment(
     @UUIDParam('id') id: Uuid,
@@ -81,11 +88,11 @@ export class AssignmentController {
   }
 
   @Put(':id')
+  @ApiOperation({
+    summary: 'update assignment by id',
+  })
   @Auth([RoleType.ADMIN])
   @HttpCode(HttpStatus.ACCEPTED)
-  @ApiAcceptedResponse({
-    description: 'update course by id',
-  })
   @ApiVersion(ApiVersionEnum.ADMIN)
   async updateAssignmentAdmin(
     @UUIDParam('id') id: Uuid,
@@ -98,6 +105,9 @@ export class AssignmentController {
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'delete assignment by id',
+  })
   @Auth([RoleType.TEACHER])
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiAcceptedResponse()
@@ -110,6 +120,9 @@ export class AssignmentController {
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'delete assignment by id',
+  })
   @Auth([RoleType.ADMIN])
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiAcceptedResponse()
@@ -118,18 +131,20 @@ export class AssignmentController {
     return this.assignmentService.deleteAssignmentAdmin(id);
   }
 
-  @Get(':id')
+  @Get(':courseId')
+  @ApiOperation({
+    summary: 'get Assignments by course id',
+  })
   @Auth([RoleType.STUDENT])
   @HttpCode(HttpStatus.OK)
   @ApiPageOkResponse({
-    description: 'Get Assignment list',
-    type: AssignmentDto,
+    type: PageDto<AssignmentDto>,
   })
   @ApiVersion(ApiVersionEnum.STUDENT)
-  async getCourses(
+  async getAssignments(
     @Query(new ValidationPipe({ transform: true }))
     pageOptionsDto: AssignmentPageOptionsDto,
-    @UUIDParam('id') courseId: Uuid,
+    @UUIDParam('courseId') courseId: Uuid,
     @AuthUser() userDto: UserDto,
   ): Promise<PageDto<AssignmentDto>> {
     return this.assignmentService.getAllForStudent(
@@ -139,18 +154,21 @@ export class AssignmentController {
     );
   }
 
-  @Get(':id')
+  @Get(':courseId')
+  @ApiOperation({
+    summary: 'get Assignments by course id',
+  })
   @Auth([RoleType.ADMIN, RoleType.TEACHER], { public: true })
   @HttpCode(HttpStatus.OK)
   @ApiPageOkResponse({
     description: 'Get Assignment list',
-    type: AssignmentDto,
+    type: PageDto<AssignmentDto>,
   })
   @ApiVersion(ApiVersionEnum.STUDENT, ApiVersionEnum.TEACHER)
-  getCourse(
+  async getAssignment(
     @Query(new ValidationPipe({ transform: true }))
     pageOptionsDto: AssignmentPageOptionsDto,
-    @UUIDParam('id') courseId: Uuid,
+    @UUIDParam('courseId') courseId: Uuid,
   ): Promise<PageDto<AssignmentDto>> {
     return this.assignmentService.getAllAdmin(pageOptionsDto, courseId);
   }

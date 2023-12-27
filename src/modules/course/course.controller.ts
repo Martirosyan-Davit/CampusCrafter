@@ -8,16 +8,16 @@ import {
   Post,
   Put,
   Query,
-  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiAcceptedResponse,
   ApiCreatedResponse,
+  ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 
-import { type PageDto } from '../../common/dto/page.dto';
+import { PageDto } from '../../common/dto/page.dto';
 import { ApiVersionEnum, RoleType } from '../../constants';
 import { ApiPageOkResponse, Auth, AuthUser, UUIDParam } from '../../decorators';
 import { ApiVersion } from '../../decorators/version.decorators';
@@ -49,6 +49,9 @@ export class CourseController {
   }
 
   @Post()
+  @ApiOperation({
+    description: 'If you are using a teacher account use CourseCreateDto',
+  })
   @Auth([RoleType.ADMIN])
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: CourseDto })
@@ -60,20 +63,25 @@ export class CourseController {
   }
 
   @Get()
+  @ApiOperation({
+    summary: 'Get courses list',
+  })
   @Auth([RoleType.STUDENT], { public: true })
   @HttpCode(HttpStatus.OK)
   @ApiPageOkResponse({
     description: 'Get courses list',
-    type: CourseDto,
+    type: PageDto<CourseDto>,
   })
   getCourses(
-    @Query(new ValidationPipe({ transform: true }))
-    pageOptionsDto: CoursePageOptionsDto,
+    @Query() pageOptionsDto: CoursePageOptionsDto,
   ): Promise<PageDto<CourseDto>> {
     return this.courseService.getCourses(pageOptionsDto);
   }
 
   @Get(':id')
+  @ApiOperation({
+    summary: 'Get single courses by course id',
+  })
   @Auth([RoleType.STUDENT], { public: true })
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
@@ -86,6 +94,9 @@ export class CourseController {
   }
 
   @Put(':id')
+  @ApiOperation({
+    summary: 'update course by id',
+  })
   @Auth([RoleType.ADMIN, RoleType.TEACHER])
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiAcceptedResponse({
@@ -100,9 +111,14 @@ export class CourseController {
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'delete course by id',
+  })
   @Auth([RoleType.ADMIN, RoleType.TEACHER])
   @HttpCode(HttpStatus.ACCEPTED)
-  @ApiAcceptedResponse()
+  @ApiAcceptedResponse({
+    description: 'delete course',
+  })
   deleteCourse(
     @UUIDParam('id') courseId: Uuid,
     @AuthUser() userDto: UserDto,

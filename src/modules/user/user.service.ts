@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { type FindOptionsWhere, Repository } from 'typeorm';
 
 import { type PageDto } from '../../common/dto/page.dto';
+import { UtilsProvider } from '../../common/utils';
 import { UserNotFoundException } from '../../exceptions';
+import { IncorrectCredentialsException } from '../../exceptions/incorrect-credentials.exception';
+import { type UserLoginDto } from '../../modules/auth/dto/user-login.dto';
 import { type UserRegisterDto } from '../auth/dto/user-register.dto';
 import { type UserDto } from './dtos/user.dto';
 import {
@@ -32,6 +35,30 @@ export class UserService {
     }
 
     return userEntity;
+  }
+
+  async validate(userLoginDto: UserLoginDto) {
+    const { email, password } = userLoginDto;
+
+    const userEntity = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.email = :email', { email })
+      .getOne();
+
+    if (!userEntity) {
+      throw new UserAlreadyCreatedException();
+    }
+
+    const isPasswordValid = await UtilsProvider.validateHash(
+      password,
+      userEntity.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new IncorrectCredentialsException();
+    }
+
+    return userEntity.toDto();
   }
 
   async createUserAdmin(
@@ -81,12 +108,8 @@ export class UserService {
     }
 
     const user = this.userRepository.create(userRegisterDto);
-    console.log(user, 'hass user CREAT IN..............');
 
-    const a = await this.userRepository.save(user);
-
-    console.log(a, 'hass user SAVE IN..............');
-
+    await this.userRepository.save(user);
 
     return user;
   }

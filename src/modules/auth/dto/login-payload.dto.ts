@@ -1,16 +1,7 @@
-import { ClassField } from '../../../decorators';
-import { UserDto } from '../../user/dtos/user.dto';
-import { TokenPayloadDto } from './token-payload.dto';
+import { BaseDto } from '../../../common/dto/base.dto';
+import { StringField } from '../../../decorators';
 
-export class LoginPayloadDto {
-  @ClassField(() => UserDto)
-  user: UserDto;
-
-  @ClassField(() => TokenPayloadDto)
-  token: TokenPayloadDto;
-
-  constructor(user: UserDto, token: TokenPayloadDto) {
-    this.user = user;
-    this.token = token;
-  }
+export class LoginPayloadDto extends BaseDto {
+  @StringField()
+  accessToken!: string;
 }

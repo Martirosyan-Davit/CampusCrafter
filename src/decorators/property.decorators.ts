@@ -1,6 +1,6 @@
 import { ApiProperty, type ApiPropertyOptions } from '@nestjs/swagger';
 
-import { getVariableName } from '../common/utils';
+import { UtilsProvider } from '../common/utils';
 
 export function ApiBooleanProperty(
   options: Omit<ApiPropertyOptions, 'type'> = {},
@@ -45,7 +45,7 @@ export function ApiEnumProperty<TEnum>(
     // throw error during the compilation of swagger
     // isArray: options.each,
     enum: enumValue,
-    enumName: getVariableName(getEnum),
+    enumName: UtilsProvider.getVariableName(getEnum),
     ...options,
   });
 }
